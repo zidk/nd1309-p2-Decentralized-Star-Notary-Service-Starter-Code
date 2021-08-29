@@ -78,22 +78,82 @@ it('lets user2 buy a star and decreases its balance in ether', async() => {
 it('can add the star name and star symbol properly', async() => {
     // 1. create a Star with different tokenId
     //2. Call the name and symbol properties in your Smart Contract and compare with the name and symbol provided
+
+    let instance = await StarNotary.deployed();
+    let name = await instance.name.call();
+    let symbol = await instance.symbol.call();
+    assert.equal(name, 'Much Wow token');
+    assert.equal(symbol, 'WOW');
+
 });
 
 it('lets 2 users exchange stars', async() => {
     // 1. create 2 Stars with different tokenId
     // 2. Call the exchangeStars functions implemented in the Smart Contract
     // 3. Verify that the owners changed
+
+    let instance = await StarNotary.deployed();
+
+    let user3 = accounts[3];
+    let user4 = accounts[4];
+
+    let token_id_9 = 9;
+    let token_id_10 = 10;
+
+    await instance.createStar('star test 9', token_id_9, {from: user3});
+    await instance.createStar('star test 10', token_id_10, {from: user4});
+
+    let owner_token_9 = await instance.ownerOf.call(token_id_9);
+    let owner_token_10 = await instance.ownerOf.call(token_id_10);
+
+    assert.equal(user3, owner_token_9);
+    assert.equal(user4, owner_token_10);
+
+    await instance.exchangeStars(token_id_9, token_id_10, {from: user3});
+
+    owner_token_9 = await instance.ownerOf.call(token_id_9);
+    owner_token_10 = await instance.ownerOf.call(token_id_10);
+
+    assert.equal(user3, owner_token_10);
+    assert.equal(user4, owner_token_9);
+
+
 });
 
 it('lets a user transfer a star', async() => {
     // 1. create a Star with different tokenId
     // 2. use the transferStar function implemented in the Smart Contract
     // 3. Verify the star owner changed.
+    let instance = await StarNotary.deployed();
+
+    let user5 = accounts[5];
+    let token_id_11 = 11;
+
+    await instance.createStar('star test 11', token_id_11, {from: user5});
+    let owner_token_11 = await instance.ownerOf.call(token_id_11);
+    assert.equal(user5, owner_token_11);
+
+    let user6 = accounts[6];
+    await instance.transferStar(user6, token_id_11, {from: user5});
+
+    owner_token_11 = await instance.ownerOf.call(token_id_11);
+    assert.equal(user5 !== owner_token_11, true);
+
 });
 
 it('lookUptokenIdToStarInfo test', async() => {
     // 1. create a Star with different tokenId
     // 2. Call your method lookUptokenIdToStarInfo
     // 3. Verify if you Star name is the same
+
+    let instance = await StarNotary.deployed();
+
+    let user5 = accounts[5];
+    let token_id_12 = 12;
+
+    await instance.createStar('star test 12', token_id_12, {from: user5});
+
+    let starName = await  instance.lookUptokenIdToStarInfo(token_id_12);
+
+    assert.equal('star test 12',starName);
 });
